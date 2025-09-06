@@ -5,16 +5,15 @@ function ListaFichas({ tipo, actualizar }) {
   const [fichas, setFichas] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [busqueda, setBusqueda] = useState("");
-  var url = "/FICHAS";
+  var url = "https://psychic-journey-jj49rx4jr5462px75-5000.app.github.dev/FICHAS";
   useEffect(() => {
     cargarFichas();
   }, [actualizar, tipo]);
 
   const cargarFichas = async () => {
     try {
-      const res = await axios.get(url);
-      const filtradas = res.data.filter(f => f.tipo === tipo);
-      setFichas(filtradas);
+  const res = await axios.get(url);
+  setFichas(res.data);
       setMensaje("");
     } catch (error) {
       setMensaje("❌ Error al cargar las fichas.");

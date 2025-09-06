@@ -4,7 +4,7 @@ import axios from "axios";
 function Formulario({ tipo, setActualizar }) {
   const getInitialState = () => {
     if (tipo === "libro") {
-      return { nombre_autor: "", apellido_autor: "", anio: "", pagina: "" };
+      return { nombre_autor: "", apellido_autor: "", anio: "", pagina: "", tema: "" };
     } else {
       return { nombre: "", tema: "", anio: "", link: "" };
     }
@@ -12,7 +12,8 @@ function Formulario({ tipo, setActualizar }) {
 
   const [formulario, setFormulario] = useState(getInitialState());
   const [mensaje, setMensaje] = useState("");
-  const url = "http://localhost:5000/api/fichas";
+  const url = "https://psychic-journey-jj49rx4jr5462px75-5000.app.github.dev/FICHAS";
+
   useEffect(() => {
     setFormulario(getInitialState());
     setMensaje("");
@@ -28,7 +29,8 @@ function Formulario({ tipo, setActualizar }) {
         formulario.nombre_autor?.trim() &&
         formulario.apellido_autor?.trim() &&
         formulario.anio &&
-        formulario.pagina
+        formulario.pagina &&
+        formulario.tema?.trim()
       );
     } else {
       return (
@@ -41,10 +43,7 @@ function Formulario({ tipo, setActualizar }) {
   };
 
   const limpiarFormulario = () => {
-    const inicial = tipo === "libro"
-      ? { nombre_autor: "", apellido_autor: "", anio: "", pagina: "" }
-      : { nombre: "", tema: "", anio: "", link: "" };
-    setFormulario(inicial);
+    setFormulario(getInitialState());
   };
 
   const handleSubmit = async (e) => {
@@ -54,33 +53,26 @@ function Formulario({ tipo, setActualizar }) {
       return;
     }
 
-    // ...código existente...
-try {
-  const response = await axios.post(url, {
-    tipo,
-    ...formulario,
-  }, {
-    headers: {
-      "Content-Type": "application/json"
+    try {
+      await axios.post(url, {
+        tipo,
+        ...formulario,
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      setMensaje("✅ Ficha guardada con éxito.");
+      limpiarFormulario();
+      setActualizar(prev => !prev); // Notifica al padre que debe actualizar la lista
+    } catch (error) {
+      if (error.response) {
+        setMensaje(`Error: ${error.response.data?.mensaje || "No se pudo guardar la ficha."}`);
+      } else if (error.request) {
+        setMensaje("Error: No hay respuesta del servidor.");
+      } else {
+        setMensaje(`Error: ${error.message}`);
+      }
     }
-  });
-
-  setMensaje("✅ Ficha guardada con éxito.");
-  limpiarFormulario();
-  setActualizar(prev => !prev); // Notifica al padre que debe actualizar la lista
-} catch (error) {
-  if (error.response) {
-    // El servidor respondió con un código fuera del rango 2xx
-    setMensaje(`Error: ${error.response.data?.mensaje || "No se pudo guardar la ficha."}`);
-  } else if (error.request) {
-    // La petición fue hecha pero no hubo respuesta
-    setMensaje("Error: No hay respuesta del servidor.");
-  } else {
-    // Algo pasó al configurar la petición
-    setMensaje(`Error: ${error.message}`);
-  }
-}
-
   };
 
   return (
@@ -99,6 +91,13 @@ try {
             placeholder="Apellido del autor"
             className="border p-2 w-full"
             value={formulario.apellido_autor || ""}
+            onChange={handleChange}
+          />
+          <input
+            name="tema"
+            placeholder="Tema"
+            className="border p-2 w-full"
+            value={formulario.tema || ""}
             onChange={handleChange}
           />
           <input
